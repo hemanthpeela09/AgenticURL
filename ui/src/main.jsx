@@ -1,15 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-
-function App() {
-  return (
-    <main style={{ fontFamily: 'sans-serif', padding: '2rem' }}>
-      <h1>AgenticURL UI scaffold</h1>
-      <p>The React/Vite frontend placeholder is ready for implementation against the spec.</p>
-    </main>
-  );
-}
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import theme from './theme.js';
+import './i18n/index.js';
+import App from './App.jsx';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode><App /></React.StrictMode>
+  <React.StrictMode><ThemeProvider theme={theme}><CssBaseline />
+    <App />
+    </ThemeProvider></React.StrictMode>
 );

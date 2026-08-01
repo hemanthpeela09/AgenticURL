@@ -2,7 +2,24 @@
   "name": "agenticurl-ui",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "echo 'UI implementation pending. Add React/Vite later.'"
+    "dev": "vite",
+    "build": "vite build", 
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "11.13.3",
+    "@emotion/styled": "11.13.0",
+    "@mui/icons-material": "5.14.0",
+    "@mui/material": "5.16.7",
+    "i18next": "^23.15.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-i18next": "^15.0.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.3.2",
+    "vite":"5.4.8"
   }
 }

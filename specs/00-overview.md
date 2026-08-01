@@ -13,10 +13,10 @@ SDD means **the specification is the source of truth and is authored before code
 
 | Order | Artifact | Drives |
 |---|---|---|
-| 1 | `01-requirements.spec.md` | Scope, functional/non-functional reqs, ambiguities, normalized problem |
+| 1 | `01-requirements-spec.md` | Scope, functional/non-functional reqs, ambiguities, normalized problem |
 | 2 | `02-openapi.yaml` | The API contract → controllers, DTOs, contract tests |
-| 3 | `03-orchestration.spec.md` | The SDLC dependency graph ↔ orchestrator engine ↔ nodes |
-| 4 | `04-governance-policy.spec.md` | Guardrails, autonomy levels, approvals, reliability metrics |
+| 3 | `03-orchestration-spec.md` | The SDLC dependency graph ↔ orchestrator engine ↔ nodes |
+| 4 | `04-governance-policy-spec.md` | Guardrails, autonomy levels, approvals, reliability metrics |
 | 5 | `05-acceptance-criteria.md` | Gherkin acceptance tests + 3 scenarios + JUnit tests |
 | 6 | `06-architecture.md` | Component model + Java module layout + tech stack |
 

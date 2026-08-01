@@ -1,0 +1,59 @@
+{
+  "app": {
+    "title": "Strumento URL Agente",
+    "subtitle": "SDLC orchestrazione governata basata su specifiche"
+  },
+  "lang": {
+    "label": "Lingua"
+  },
+  "tabs": {
+    "shortener": "Accorciatore",
+    "analytics": "Analisi",
+    "orchestrator": "Orchestratore"
+  },
+  "shorten": {
+    "title": "Crea link breve",
+    "longUrl": "URL lungo",
+    "alias": "Alias personalizzato (opzionale)",
+    "ttl": "Secondi TTL (opzionale)",
+    "submit": "Accorcia",
+    "submitting": "Accorciamento...",
+    "resultPrefix": "Link breve:",
+    "code": "codice"
+  },
+  "stats": {
+    "title": "Analisi del link",
+    "code": "Codice breve",
+    "load": "Carica statistiche",
+    "clicks": "{{count}} clic",
+    "lastAccessed": "ultimo accesso {{when}}",
+    "byDay": "Clic per giorno",
+    "referrers": "Referrer",
+    "key": "Chiave",
+    "clicksCol": "Clic"
+  },
+  "orch": {
+    "title": "Orchestratore SDLC agentico",
+    "scenario": "Scenario",
+    "approval": "Approvazione",
+    "approvalAuto": "auto-approva",
+    "approvalDeny": "nega (arresto sicuro)",
+    "run": "Esegui scenario",
+    "running": "In esecuzione...",
+    "completed": "COMPLETATO",
+    "safeStopped": "ARRESTO SICURO",
+    "runId": "esecuzione {{id}}",
+    "openQuestions": "Domande aperte:",
+    "lineage": "Tracciabilità decisionale ({{count}} eventi)",
+    "node": "Nodo",
+    "kind": "Tipo",
+    "detail": "Dettaglio"
+  },
+  "dag": {
+    "title": "Grafo delle dipendenze SDLC",
+    "legend": "* = checkpoint di approvazione umana • Implementazione || Stesura test in parallelo, poi join"
+  },
+  "metrics": {
+    "title": "Metriche di affidabilità"
+  }
+}

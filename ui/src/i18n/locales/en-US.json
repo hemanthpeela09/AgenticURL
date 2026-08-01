@@ -1,0 +1,59 @@
+{
+  "app": {
+    "title": "Agentic URL Shortener",
+    "subtitle": "Spec-driven • governed SDLC orchestration"
+  },
+  "lang": {
+    "label": "Language"
+  },
+  "tabs": {
+    "shortener": "Shortener",
+    "analytics": "Analytics",
+    "orchestrator": "Orchestrator"
+  },
+  "shorten": {
+    "title": "Create short link",
+    "longUrl": "Long URL",
+    "alias": "Custom alias (optional)",
+    "ttl": "TTL seconds (optional)",
+    "submit": "Shorten",
+    "submitting": "Shortening...",
+    "resultPrefix": "Short link:",
+    "code": "code"
+  },
+  "stats": {
+    "title": "Link analytics",
+    "code": "Short code",
+    "load": "Load stats",
+    "clicks": "{{count}} clicks",
+    "lastAccessed": "last accessed {{when}}",
+    "byDay": "Clicks by day",
+    "referrers": "Referrers",
+    "key": "Key",
+    "clicksCol": "Clicks"
+  },
+  "orch": {
+    "title": "Agentic SDLC orchestrator",
+    "scenario": "Scenario",
+    "approval": "Approval",
+    "approvalAuto": "auto-approve",
+    "approvalDeny": "deny (safe-stop)",
+    "run": "Run scenario",
+    "running": "Running...",
+    "completed": "COMPLETED",
+    "safeStopped": "SAFE-STOPPED",
+    "runId": "run {{id}}",
+    "openQuestions": "Open questions:",
+    "lineage": "Decision lineage ({{count}} events)",
+    "node": "Node",
+    "kind": "Kind",
+    "detail": "Detail"
+  },
+  "dag": {
+    "title": "SDLC dependency graph",
+    "legend": "* = human-approval checkpoint • Implementation || Test Authoring run in parallel, then join"
+  },
+  "metrics": {
+    "title": "Reliability metrics"
+  }
+}
