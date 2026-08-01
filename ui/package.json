@@ -1,0 +1,8 @@
+{
+  "name": "agenticurl-ui",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'UI implementation pending. Add React/Vite later.'"
+  }
+}

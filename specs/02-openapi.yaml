@@ -1,0 +1,154 @@
+openapi: 3.0.3
+info:
+  title: URL Shortener API
+  version: 1.0.0
+  description: >
+    Core URL shortener with analytics, custom aliases, TTL, and rate limiting.
+    This contract is authored before implementation (spec-driven) and drives the
+    controllers, DTOs, and contract tests.
+servers:
+  - url: http://localhost:8080
+    description: Local
+
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Liveness + link count
+      responses:
+        "200":
+          description: Service healthy
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthResponse" }
+
+  /api/shorten:
+    post:
+      operationId: shorten
+      summary: Create a short link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ShortenRequest" }
+      responses:
+        "201":
+          description: Link created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShortenResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409":
+          description: Custom alias already in use
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /api/stats/{code}:
+    get:
+      operationId: stats
+      summary: Analytics for a link
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Analytics
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StatsResponse" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /{code}:
+    get:
+      operationId: redirect
+      summary: Redirect to the long URL (records a click)
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "302":
+          description: Redirect to the long URL
+          headers:
+            Location:
+              schema: { type: string, format: uri }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "410":
+          description: Link expired
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+components:
+  responses:
+    BadRequest:
+      description: Invalid request (bad URL or invalid/reserved alias)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: Unknown code
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }          
+  schemas:
+    ShortenRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://example.com/some/very/long/path
+        customAlias:
+          type: string
+          nullable: true
+          pattern: "^[A-Za-z0-9_-]{3,32}$"
+          example: my-link
+        ttlSeconds:
+          type: integer
+          format: int64
+          nullable: true
+          minimum: 1
+          example: 3600
+    ShortenResponse:
+      type: object
+      properties:
+        code: { type: string, example: 3k }
+        shortUrl: { type: string, example: http://localhost:8080/3k }
+        longUrl: { type: string, format: uri }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time, nullable: true }
+    StatsResponse:
+      type: object
+      properties:
+        code: { type: string }
+        longUrl: { type: string, format: uri }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time, nullable: true }
+        totalClicks: { type: integer }
+        clicksByDay:
+          type: object
+          additionalProperties: { type: integer }
+        referrers:
+          type: object
+          additionalProperties: { type: integer }
+        lastAccessed: { type: string, format: date-time, nullable: true }
+    HealthResponse:
+      type: object
+      properties:
+        status: { type: string, example: ok }
+        links: { type: integer, example: 12 }
+    ErrorResponse:
+      type: object
+      properties:
+        detail: { type: string }
