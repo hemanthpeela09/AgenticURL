@@ -1,5 +1,4 @@
----
-## PROJECT DEMO:
+PROJECT DEMO:
 
 Single-view home page:  
 ![](../specs/screenshots/ss1.png)
@@ -47,5 +46,3 @@ STEP 10: SWAGGER APIs for the URL services
 
 STEP 11: Fully resilient deployed service in Docker  
 ![](../specs/screenshots/ss15.png)
-
----
