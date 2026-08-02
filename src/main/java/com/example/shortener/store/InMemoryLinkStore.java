@@ -3,6 +3,8 @@ package com.example.shortener.store;
 import com.example.shortener.domain.Link;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,4 +37,9 @@ public class InMemoryLinkStore implements LinkStore {
 
     @Override
     public long count() { return links.size(); }
+
+    @Override
+    public List<Link> findAll(){
+        return new ArrayList<>(links.values());
+    }
 }

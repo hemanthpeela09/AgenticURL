@@ -47,13 +47,27 @@
     "lineage": "Decision lineage ({{count}} events)",
     "node": "Node",
     "kind": "Kind",
-    "detail": "Detail"
+    "detail": "Detail","aiMode": "AI Agent Mode",
+    "runChain": "Run Chain",
+    "runAgent": "Run Agent",
+    "customRequirement": "Custom Requirement",
+    "chainResult": "LangChain SDLC Result",
+    "agentResult": "AI Agent Result",
+    "agentSteps": "Agent Reasoning Steps",
+    "thought": "Thought",
+    "action": "Action",
+    "actionInput": "Action Input",
+    "observation": "Observation",
+    "finalOutput": "Final Output",
+    "llmBackend": "LLM Backend"
   },
   "dag": {
     "title": "SDLC dependency graph",
-    "legend": "* = human-approval checkpoint • Implementation || Test Authoring run in parallel, then join"
+    "legend": "* = human-approval checkpoint · Implementation || Test Authoring run in parallel, then join",
+    "aiPowered": "AI Powered",
+    "completedByAi": "Completed by AI",
+    "aiProcessing": "AI Processing",
+    "pending": "Pending"
   },
-  "metrics": {
-    "title": "Reliability metrics"
-  }
+  "metrics": { "title": "Reliability metrics" }
 }

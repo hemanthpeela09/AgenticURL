@@ -5,11 +5,11 @@ const theme = createTheme({
     palette: {
         primary: { main: '#2F749A' },
         secondary: { main: '#092e5d' },
-        background: { default: '#F4f6f9', paper: '#fffff' },
+        background: { default: '#F4f6f9', paper: '#ffffff' },
         success: { main: '#28743e' },
         warning: { main: '#ff9800' },
         error: { main: '#b91224' },
-        text: { primary: '#000000', secondary: '#666666' },
+        text: { primary: '#464646', secondary: '#727272' },
     },
     typography: {
         fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
@@ -22,10 +22,8 @@ const theme = createTheme({
     },
     components: {
         MuiButton: {
-            styleOverrides: {
-                root: {
-                    border: '1px solid #e3e8ef',
-                },
+            defaultProps: {
+                disableElevation: true
             },
         },
         MuiChip: {
@@ -39,6 +37,13 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     border: '1px solid #e3e8ef',
+                },
+            },
+        },
+        MuiDialog: {
+            styleOverrides: {
+                paper: {
+                    backgroundColor: '#ffffff',
                 },
             },
         },

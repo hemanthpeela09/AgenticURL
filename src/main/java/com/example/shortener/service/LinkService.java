@@ -97,6 +97,11 @@ public class LinkService {
 
     public long count() { return store.count(); }
 
+    /** Returns all links (for admin/analytics purposes). */
+    public List<Link> listAll(){
+        return store.findAll();
+    }
+
     private void validateUrl(String url) {
         if (url == null || url.isBlank()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "url is required");

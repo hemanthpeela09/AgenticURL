@@ -17,6 +17,10 @@ java {
     }
 }
 
+ext{
+    springAiVersion = '1.0.0-M6'
+}
+
 sourceSets {
     main {
         java {
@@ -42,13 +46,31 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
+    
+    // Spring AI - Core
+    implementation "org.springframework.ai:spring-ai-core:${springAiVersion}"
+
+    // Spring AI - OpenAI (ChatGPT) - uncomment to use OpenAI
+    implementation "org.springframework.ai:spring-ai-openai-spring-boot-starter:${springAiVersion}"
+
+    // Spring AI - Azure OpenAI - uncomment to use Azure OpenAI
+    // implementation "org.springframework.ai:spring-ai-azure-openai-spring-boot-starter:${springAiVersion}"
+
+    // Spring AI - Ollama (Local LLM) - uncomment to use Ollama
+    // implementation "org.springframework.ai:spring-ai-ollama-spring-boot-starter:${springAiVersion}"
+
+    // Spring AI - Anthropic (Claude) - uncomment to use Claude
+    // implementation "org.springframework.ai:spring-ai-anthropic-spring-boot-starter:${springAiVersion}"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test'){
     useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
 }
 
 tasks.named('processResources') {

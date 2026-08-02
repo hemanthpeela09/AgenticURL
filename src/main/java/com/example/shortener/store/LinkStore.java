@@ -2,6 +2,7 @@ package com.example.shortener.store;
 
 import com.example.shortener.domain.Link;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -22,4 +23,6 @@ public interface LinkStore {
     Optional<String> codeForUrl(String longUrl);
 
     long count();
+
+    List<Link> findAll();
 }
