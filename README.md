@@ -5,10 +5,10 @@ A spec-driven starter template for a URL shortener service plus an agentic SDLC 
 ## Status
 
 This architecture delivers:
-UI: Modern React SPA with Material UI, i18n support, real-time DAG visualization, and Blue-Green metrics dashboard.  
-Orchestration: Hand-rolled DAG engine with gates, policies, bounded retry, rollback, and safe-stop for governed SDLC automation.  
-LLM: Pluggable LangChain-style abstraction supporting Mock (offline), OpenAI, Azure, and Ollama backends with chains, agents, and memory.  
-Blue-Green Resiliency: Health monitoring, exponential backoff retries, request queuing, and comprehensive metrics for production-grade reliability.
+- UI: Modern React SPA with Material UI, i18n support, real-time DAG visualisation, and Blue-Green metrics dashboard.  
+- Orchestration: Hand-rolled DAG engine with gates, policies, bounded retry, rollback, and safe-stop for governed SDLC automation.  
+- LLM: Pluggable LangChain-style abstraction supporting Mock (offline), OpenAI, Azure, and Ollama backends with chains, agents, and memory.  
+- Blue-Green Resiliency: Health monitoring, exponential backoff retries, request queuing, and comprehensive metrics for production-grade reliability.
 
 ## Repository layout
 
