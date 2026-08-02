@@ -27,7 +27,10 @@ export function shorten(payload) {
 
 export function stats(code) {
     return fetch(`${BASE}/api/stats/${encodeURIComponent(code)}`).then(handleResponse);
+}
 
+export function listAllUrls() {
+    return fetch(`${BASE}/api/urls`).then(handleResponse);
 }
 
 export async function listScenarios() {
@@ -135,5 +138,33 @@ export function formatTemplate(template, variables) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ template, variables }),
+    }).then(handleResponse);
+}
+
+/**
+ * Shorten a URL using AI/natural language processing.
+ * The AI will extract the URL and optional alias from the prompt.
+ *
+ * Example prompts:
+ * - "Shorten https://example.com/long/url with alias mylink"
+ * - "Create a short URL for https://google.com"
+ * - "I want to shorten https://github.com/repo and call it gh-repo"
+ */
+export function shortenWithAi(prompt) {
+    return fetch(`${BASE}/api/llm/shorten`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+    }).then(handleResponse);
+}
+
+/**
+ * Shorten a URL using the ReAct agent with full reasoning trace.
+ */
+export function shortenWithAgent(prompt) {
+    return fetch(`${BASE}/api/llm/shorten/agent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
     }).then(handleResponse);
 }

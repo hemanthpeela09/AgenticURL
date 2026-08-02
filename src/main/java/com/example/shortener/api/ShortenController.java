@@ -44,14 +44,20 @@ public class ShortenController {
                 s.totalClicks(), s.clicksByDay(), s.referrers(), s.lastAccessed());
     }
 
+    @GetMapping("/urls")
+    public java.util.List<ShortenResponse> listAllUrls() {
+        return service.listAll().stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     private ShortenResponse toResponse(Link link) {
         return new ShortenResponse(
                 link.code(),
                 baseUrl + "/" + link.code(),
                 link.longUrl(),
                 link.createdAt(),
-                link.expiresAt()
-        );
+                link.expiresAt());
     }
 
     private String clientKey(HttpServletRequest http) {
