@@ -46,6 +46,24 @@ services:
       - agentic-network
     restart: unless-stopped
 
+  # Ambiguous UI node - always renders the frontend even if the backend services are down
+  ambiguous:
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+      args:
+        VITE_API_BASE: http://localhost:8081
+    container_name: ambiguous-node
+    ports:
+      - "4173:4173"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_BASE=http://localhost:8081
+    networks:
+      - agentic-network
+    restart: unless-stopped
+
+
 networks:
   agentic-network:
     driver: bridge

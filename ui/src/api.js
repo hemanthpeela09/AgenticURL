@@ -1,6 +1,6 @@
 // Thin API client. All calls go through handleResponse to surface HTTP errors.
-// Use a relative base so Vite can proxy requests from the 5173 dev UI to the Spring backend.
-const BASE = import.meta.env.VITE_API_BASE || '';
+// Use VITE_API_BASE from build-time, falling back to runtime window.APP_API_BASE.
+const BASE = import.meta.env.VITE_API_BASE || window.APP_API_BASE || '';
 
 function apiUrl(path) {
     if (!path.startsWith('/')) {
