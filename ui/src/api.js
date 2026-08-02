@@ -1,5 +1,13 @@
 // Thin API client. All calls go through handleResponse to surface HTTP errors.
+// Use a relative base so Vite can proxy requests from the 5173 dev UI to the Spring backend.
 const BASE = import.meta.env.VITE_API_BASE || '';
+
+function apiUrl(path) {
+    if (!path.startsWith('/')) {
+        path = `/${path}`;
+    }
+    return `${BASE}${path}`;
+}
 
 async function handleResponse(res) {
     if (!res.ok) {
@@ -18,28 +26,49 @@ async function handleResponse(res) {
 }
 
 export function shorten(payload) {
-    return fetch(`${BASE}/api/shorten`, {
+    const promptParts = [];
+    if (payload?.prompt) {
+        return fetch(apiUrl('/api/orchestrator/shorten'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: payload.prompt }),
+        }).then(handleResponse);
+    }
+
+    if (payload?.url) {
+        promptParts.push(`Shorten ${payload.url}`);
+    }
+    if (payload?.customAlias) {
+        promptParts.push(`with alias ${payload.customAlias}`);
+    }
+    if (payload?.ttlSeconds != null && payload.ttlSeconds !== '') {
+        promptParts.push(`with ttl ${payload.ttlSeconds}`);
+    }
+
+    const prompt = promptParts.join(' ').trim();
+
+    return fetch(apiUrl('/api/orchestrator/shorten'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ prompt }),
     }).then(handleResponse);
 }
 
 export function stats(code) {
-    return fetch(`${BASE}/api/stats/${encodeURIComponent(code)}`).then(handleResponse);
+    return fetch(apiUrl(`/api/stats/${encodeURIComponent(code)}`)).then(handleResponse);
 }
 
 export function listAllUrls() {
-    return fetch(`${BASE}/api/urls`).then(handleResponse);
+    return fetch(apiUrl('/api/urls')).then(handleResponse);
 }
 
 export async function listScenarios() {
-    return fetch(`${BASE}/api/orchestrator/scenarios`).then(handleResponse);
+    return fetch(apiUrl('/api/orchestrator/scenarios')).then(handleResponse);
 }
 
 export async function runScenario(scenario, approval = 'auto') {
     const q =  new URLSearchParams({ scenario, approval }).toString();
-    return fetch(`${BASE}/api/orchestrator/run?${q}`, { method: 'POST'}).then(handleResponse);
+    return fetch(apiUrl(`/api/orchestrator/run?${q}`), { method: 'POST'}).then(handleResponse);
 }
 
 // ==========================================
@@ -50,14 +79,14 @@ export async function runScenario(scenario, approval = 'auto') {
  * Get LLM backend information
  */
 export function getLlmInfo() {
-    return fetch(`${BASE}/api/llm/info`).then(handleResponse);
+    return fetch(apiUrl('/api/llm/info')).then(handleResponse);
 }
 
 /**
  * Simple chat completion
  */
 export function chat(message, systemPrompt = null) {
-    return fetch(`${BASE}/api/llm/chat`, {
+    return fetch(apiUrl('/api/llm/chat'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, systemPrompt }),
@@ -77,7 +106,7 @@ export function streamChat(message, systemPrompt, onToken, onComplete, onError) 
     const params = new URLSearchParams({ message });
     if (systemPrompt) params.append('systemPrompt', systemPrompt);
 
-    const eventSource = new EventSource(`${BASE}/api/llm/chat/stream?${params}`);
+    const eventSource = new EventSource(apiUrl(`/api/llm/chat/stream?${params}`));
 
     eventSource.onmessage = (event) => {
         onToken(event.data);
@@ -101,7 +130,7 @@ export function streamChat(message, systemPrompt, onToken, onComplete, onError) 
  * Execute SDLC chain with LangChain
  */
 export function runSdlcChain(requirement) {
-    return fetch(`${BASE}/api/llm/chain/sdlc`, {
+    return fetch(apiUrl('/api/llm/chain/sdlc'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requirement }),
@@ -112,7 +141,7 @@ export function runSdlcChain(requirement) {
  * Execute custom LLM chain
  */
 export function runCustomChain(context, steps) {
-    return fetch(`${BASE}/api/llm/chain/custom`, {
+    return fetch(apiUrl('/api/llm/chain/custom'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ context, steps }),
@@ -123,7 +152,7 @@ export function runCustomChain(context, steps) {
  * Run SDLC agent with tools
  */
 export function runSdlcAgent(input) {
-    return fetch(`${BASE}/api/llm/agent/sdlc`, {
+    return fetch(apiUrl('/api/llm/agent/sdlc'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input }),
@@ -134,7 +163,7 @@ export function runSdlcAgent(input) {
  * Format a prompt template
  */
 export function formatTemplate(template, variables) {
-    return fetch(`${BASE}/api/llm/template/format`, {
+    return fetch(apiUrl('/api/llm/template/format'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ template, variables }),
@@ -151,7 +180,7 @@ export function formatTemplate(template, variables) {
  * - "I want to shorten https://github.com/repo and call it gh-repo"
  */
 export function shortenWithAi(prompt) {
-    return fetch(`${BASE}/api/llm/shorten`, {
+    return fetch(apiUrl('/api/orchestrator/shorten'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
@@ -162,9 +191,18 @@ export function shortenWithAi(prompt) {
  * Shorten a URL using the ReAct agent with full reasoning trace.
  */
 export function shortenWithAgent(prompt) {
-    return fetch(`${BASE}/api/llm/shorten/agent`, {
+    return fetch(apiUrl('/api/llm/shorten/agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
     }).then(handleResponse);
+}
+
+// Blue - Green Metrics
+export function getGreenfieldHealth() {
+    return fetch(apiUrl('/api/orchestrator/greenfield/health')).then(handleResponse);
+}
+
+export function getBlueGreenMetrics() {
+    return fetch(apiUrl('/api/orchestrator/metrics')).then(handleResponse);
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     Box, Button, Card, CardContent, Typography, Alert, Stack, MenuItem, TextField,
     Chip, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableCell,
@@ -23,12 +23,7 @@ import DagView from './DagView.jsx';
 import MetricsPanel from './MetricsPanel.jsx';
 import LinkIcon from '@mui/icons-material/Link';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-
-const KIND_COLOR = {
-    policy: 'secondary', approval: 'warning', error: 'error', rollback: 'warning',
-    safe_stop: 'error', replan: 'info', clarification: 'info', synchronize: 'success',
-    parallel: 'info', artifact: 'default',
-};
+import InsightsIcon from '@mui/icons-material/Insights';
 
 // Tab panel component
 function TabPanel({ children, value, index, ...other }) {
@@ -41,7 +36,12 @@ function TabPanel({ children, value, index, ...other }) {
 
 export default function ScenarioRunner({ pendingRequests, setPendingRequests }) {
     const { t } = useTranslation();
-    const [scenarios, setScenarios] = useState([]);
+    const staticScenarios = useMemo(() => [
+        { key: 'greenfield', requirement: 'Build a URL shortener service with core APIs and click analytics.' },
+        { key: 'brownfield', requirement: 'Add link expiry (TTL) and analytics to the existing URL shortener service.' },
+        { key: 'ambiguous', requirement: 'Make the links safer.' },
+    ], []);
+    const [scenarios, setScenarios] = useState(staticScenarios);
     const [scenario, setScenario] = useState('greenfield');
     const [approval, setApproval] = useState('auto');
     const [result, setResult] = useState(null);
@@ -64,16 +64,19 @@ export default function ScenarioRunner({ pendingRequests, setPendingRequests }) 
     const [selectedRequests, setSelectedRequests] = useState([]);
     // Show pending requests dialog
     const [showPendingDialog, setShowPendingDialog] = useState(false);
+    // Show blue-green metrics dialog
+    const [showMetricsDialog, setShowMetricsDialog] = useState(false);
     // approvalStatus: null | 'approved' | 'denied'
     const [approvalStatus, setApprovalStatus] = useState(null);
     // Processing results for batch operations
     const [processingResults, setProcessingResults] = useState([]);
 
     useEffect(() => {
-        listScenarios().then(setScenarios).catch((e) => setError(e.message));
+        // Keep the UI functional even if the backend scenario endpoint is unavailable.
+        setScenarios(staticScenarios);
         // Fetch LLM info on mount
         getLlmInfo().then(setLlmInfo).catch(() => setLlmInfo({ backend: 'unavailable', supportsStreaming: false }));
-    }, []);
+    }, [staticScenarios]);
 
     const refreshLlmInfo = async () => {
         try {
@@ -373,6 +376,16 @@ export default function ScenarioRunner({ pendingRequests, setPendingRequests }) 
                                 Pending Requests
                             </Button>
                         </Badge>
+
+                        {/* Blue-Green Metrics Button*/}
+                        <Button
+                            variant="outlined"
+                            onClick={() => setShowMetricsDialog(true)}
+                            startIcon={<InsightsIcon />}
+                            color={"info"}
+                            >
+                            Metrics
+                        </Button>
                     </Stack>
 
                     {/* AI Mode buttons for submitting requests - show specific button based on scenario */}
@@ -507,37 +520,6 @@ export default function ScenarioRunner({ pendingRequests, setPendingRequests }) 
                     )}
 
                     <MetricsPanel metrics={result.metrics} />
-
-                    <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography>{t('orch.lineage', { count: result.lineage?.length || 0 })}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>#</TableCell>
-                                        <TableCell>{t('orch.node')}</TableCell>
-                                        <TableCell>{t('orch.kind')}</TableCell>
-                                        <TableCell>{t('orch.detail')}</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {(result.lineage || []).map((e) => (
-                                        <TableRow key={e.seq}>
-                                            <TableCell>{e.seq}</TableCell>
-                                            <TableCell>{e.node}</TableCell>
-                                            <TableCell>
-                                                <Chip size="small" label={e.kind}
-                                                      color={KIND_COLOR[e.kind] || 'default'} />
-                                            </TableCell>
-                                            <TableCell>{e.detail}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </AccordionDetails>
-                    </Accordion>
                 </>
             )}
 
@@ -1081,6 +1063,27 @@ export default function ScenarioRunner({ pendingRequests, setPendingRequests }) 
                             </Button>
                         </Stack>
                     </Stack>
+                </DialogActions>
+            </Dialog>
+
+            {/* Blue-Green Metrics Dialog */}
+            <Dialog
+                open={showMetricsDialog}
+                onClose={() => setShowMetricsDialog(false)}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogTitle>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <InsightsIcon color="info" />
+                        <Typography variant="h6">Blue-Green Deployment Metrics</Typography>
+                    </Stack>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <MetricsPanel showBlueGreen={showMetricsDialog} />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowMetricsDialog(false)}>Close</Button>
                 </DialogActions>
             </Dialog>
         </Stack>
