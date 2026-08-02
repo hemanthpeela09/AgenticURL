@@ -132,20 +132,36 @@ com.example.orchestrator/
 ## 4 LLM Integration
 
 ### 4.1 LangChain-Style Architecture
-+-------------------------------------------------------------------+
-|                       LLM ABSTRACTION LAYER                       |
-|                                                                   |
-|   +-----------------------------------------------------------+   |
-|   |                        Llm Interface                      |   |
-|   |           complete(system, prompt) -> String              |   |
-|   +-----------------------------------------------------------+   |
-|         |                   |                  |            |     |
-|         v                   v                  v            v     |
-|   +-----------+       +-----------+       +---------+  +--------+ |
-|   |  MockLlm  |       | SpringAi  |       |  Azure  |  |Ollama  | |
-|   | (offline) |       | (OpenAI)  |       | (Azure) |  |(local) | |
-|   +-----------+       +-----------+       +---------+  +--------+ |
-+-------------------------------------------------------------------+
+
+graph TD
+    %% Subgraph styling
+    subgraph Layer ["LLM ABSTRACTION LAYER"]
+        direction TB
+        
+        %% Interface Node
+        Interface["<b>Llm Interface</b><br>complete(system, prompt) -> String"]
+        
+        %% Concrete Implementations
+        Mock["<b>MockLlm</b><br>(offline)"]
+        Spring["<b>SpringAi</b><br>(OpenAI)"]
+        Azure["<b>Azure</b><br>(Azure)"]
+        Ollama["<b>Ollama</b><br>(local)"]
+        
+        %% Connections
+        Interface --> Mock
+        Interface --> Spring
+        Interface --> Azure
+        Interface --> Ollama
+    end
+
+    %% Style Classes
+    style Layer fill:#f9f9f9,stroke:#333,stroke-width:2px,color:#333
+    style Interface fill:#fff,stroke:#333,stroke-width:1px
+    style Mock fill:#fff,stroke:#333,stroke-width:1px
+    style Spring fill:#fff,stroke:#333,stroke-width:1px
+    style Azure fill:#fff,stroke:#333,stroke-width:1px
+    style Ollama fill:#fff,stroke:#333,stroke-width:1px
+
 
 ### 4.2 Execution flow
 Requirement -> [Step 1: Analysis] -> [Step 2: Design] -> [Step 3: Conditional] -> Result
@@ -159,97 +175,155 @@ requirement_spec        design_spec          security_spec
 ### 5.1 Overview
 The "Greenfield" node (Blue) represents the primary execution environment, while "Brownfield" (Green) serves as the current/fallback environment.
 
-+-------------------------------------------------------------------+
-|                     BLUE-GREEN DEPLOYMENT MODEL                   |
-|                                                                   |
-|      +------------------------+      +---------------------+      |
-|      |       GREENFIELD       |      |     BROWNFIELD      |      |
-|      |      (Blue - New)      |      |   (Green - Current) |      |
-|      |                        |      |                     |      |
-|      |     localhost:8080     |      |    localhost:8081    |      |
-|      |                        |      |                     |      |
-|      |     Status:   UP       |      |    Status:   UP     |      |
-|      +------------------------+      +---------------------+      |
-|                   |                             |                 |
-|                   +--------------+--------------+                 |
-|                                  |                                |
-|                                  v                                |
-|                     +------------------------+                    |
-|                     | GreenfieldHealthService|                    |
-|                     | - Health monitoring    |                    |
-|                     | - Retry with backoff   |                    |
-|                     | - Request queuing      |                    |
-|                     | - Metrics collection   |                    |
-|                     +------------------------+                    |
-+-------------------------------------------------------------------+
+graph TD
+    %% Main Wrapper
+    subgraph Model ["BLUE-GREEN DEPLOYMENT MODEL"]
+        direction TB
+
+        %% Services Row
+        subgraph Services [" "]
+            direction LR
+            Greenfield["<b>GREENFIELD</b><br>(Blue - New)<br><br>localhost:8080<br><br>Status: UP"]
+            Brownfield["<b>BROWNFIELD</b><br>(Green - Current)<br><br>localhost:8081<br><br>Status: UP"]
+        end
+
+        %% Health Service Node
+        HealthService["<b>GreenfieldHealthService</b><br>• Health monitoring<br>• Retry with backoff<br>• Request queuing<br>• Metrics collection"]
+
+        %% Connections
+        Greenfield --> HealthService
+        Brownfield --> HealthService
+    end
+
+    %% Visual Styling
+    style Model fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Services fill:none,stroke:none
+    style Greenfield fill:#fff,stroke:#333,stroke-width:1px
+    style Brownfield fill:#fff,stroke:#333,stroke-width:1px
+    style HealthService fill:#fff,stroke:#333,stroke-width:1px
+
 
 ### 5.2 Retry Strategy Flow
-+-------------------------------------------------------------------+
-|                        RETRY STRATEGY FLOW                        |
-|                                                                   |
-| Request Received                                                  |
-|        |                                                          |
-|        v                                                          |
-|  +-----------+    healthy                                         |
-|  |Check Health|--------------> Execute Operation ---> Success     |
-|  |  /health  |                                                    |
-|  +-----------+                                                    |
-|        |                                                          |
-|     unhealthy                                                     |
-|        v                                                          |
-|  +---------------+                                                |
-|  | Queue Request |<--------------------------------------------+  |
-|  |  (increment)  |                                             |  |
-|  +---------------+                                             |  |
-|        |                                                       |  |
-|        v                                                       |  |
-|  +-------------------------------------------------------+     |  |
-|  |               EXPONENTIAL BACKOFF LOOP                |     |  |
-|  |                                                       |     |  |
-|  | for (retry = 1; retry <= maxRetries; retry++):        |     |  |
-|  |     sleep(currentDelay)                               |     |  |
-|  |     if (elapsed >= maxWaitMs):                        |     |  |
-|  |         return TIMEOUT                                |     |  |
-|  |     if (isHealthy()):                                 |     |  |
-|  |         return SUCCESS -> Execute                     |     |  |
-|  |     currentDelay = min(currentDelay * 2, 10000ms)    |-----+ retry
-|  +-------------------------------------------------------+        |
-|        |                                                          |
-|        v                                                          |
-|  +-------------------+                                            |
-|  |    Max Retries    |                                            |
-|  |     Exceeded      |-----> Return TIMEOUT with metrics          |
-|  +-------------------+                                            |
-+-------------------------------------------------------------------+
+
+flowchart TD
+    %% Main Border
+    subgraph Flow ["RETRY STRATEGY FLOW"]
+        direction TB
+
+        %% Entry Node
+        Start([Request Received])
+
+        %% Execution Nodes
+        CheckHealth{"Check Health<br><b>/health</b>"}
+        Execute[Execute Operation]
+        Success([Success])
+        Queue["Queue Request<br><i>(increment)</i>"]
+
+        %% Loop Subgraph
+        subgraph Loop ["EXPONENTIAL BACKOFF LOOP"]
+            direction TB
+            LoopStart["<b>for (retry = 1; retry &lt;= maxRetries; retry++)</b>"]
+            Sleep["sleep(currentDelay)"]
+            
+            CheckTimeout{"if (elapsed &gt;= maxWaitMs)"}
+            RetTimeout([return TIMEOUT])
+            
+            CheckLoopHealth{"if (isHealthy())"}
+            RetSuccess([return SUCCESS -> Execute])
+            
+            CalcDelay["currentDelay = min(currentDelay * 2, 10000ms)"]
+
+            %% Internal Loop Flow
+            LoopStart --> Sleep
+            Sleep --> CheckTimeout
+            CheckTimeout -- Yes --> RetTimeout
+            CheckTimeout -- No --> CheckLoopHealth
+            CheckLoopHealth -- Yes --> RetSuccess
+            CheckLoopHealth -- No --> CalcDelay
+        end
+
+        %% Failure Nodes
+        MaxExceeded["Max Retries<br>Exceeded"]
+        FinalTimeout([Return TIMEOUT with metrics])
+
+        %% Main Flow Connections
+        Start --> CheckHealth
+        CheckHealth -- healthy --> Execute --> Success
+        CheckHealth -- unhealthy --> Queue
+        Queue --> LoopStart
+        
+        %% Loop Exits and Iteration
+        CalcDelay -- retry --> Queue
+        LoopStart -- loop exhausted --> MaxExceeded
+        MaxExceeded --> FinalTimeout
+    end
+
+    %% Visual Styling
+    style Flow fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Loop fill:#f0f0f0,stroke:#666,stroke-width:1px,stroke-dasharray: 5 5
+    style CheckHealth fill:#fff,stroke:#333,stroke-width:1px
+    style CheckTimeout fill:#fff,stroke:#333,stroke-width:1px
+    style CheckLoopHealth fill:#fff,stroke:#333,stroke-width:1px
+    style Execute fill:#fff,stroke:#333,stroke-width:1px
+    style Queue fill:#fff,stroke:#333,stroke-width:1px
+    style Sleep fill:#fff,stroke:#333,stroke-width:1px
+    style CalcDelay fill:#fff,stroke:#333,stroke-width:1px
+    style MaxExceeded fill:#fff,stroke:#333,stroke-width:1px
+
 
 ### 5.3 Metrics Dashboard
 The UI displays comprehensive Blue-Green metrics
 
 ### 5.4 Safe-Stop Mechanism
-+-------------------------------------------------------------------+
-|                        SAFE-STOP TRIGGERS                         |
-|                                                                   |
-| 1. CRITICAL NODE FAILURE                                          |
-|    +-> Node marked as critical fails -> Immediate safe-stop        |
-|                                                                   |
-| 2. POLICY BLOCK                                                   |
-|    +-> Guardrail returns allowed=false -> Safe-stop with reason    |
-|                                                                   |
-| 3. APPROVAL REJECTION                                             |
-|    +-> Human denies approval request -> Safe-stop                 |
-|                                                                   |
-| 4. BROWNFIELD CHANGE CONTROL (G-4)                                |
-|    +-> Breaking change without migration approval -> Safe-stop    |
-|                                                                   |
-| 5. USER DENIAL (UI)                                               |
-|    +-> Pending request denied -> Safe-stop with user notification |
-|                                                                   |
-| SAFE-STOP GUARANTEES:                                             |
-| / Blackboard state preserved (no partial artifacts)               |
-| / Full lineage recorded (audit trail intact)                      |
-| / Metrics updated (safeStops counter)                             |
-| / Reason surfaced to UI/CLI (safeStopReason field)                |
-+-------------------------------------------------------------------+
+
+flowchart TD
+    %% Main Container
+    subgraph Main ["SAFE-STOP TRIGGERS"]
+        direction TB
+
+        %% Triggers Block
+        subgraph Triggers ["TRIGGERS"]
+            direction TB
+            T1["<b>1. CRITICAL NODE FAILURE</b><br>Node marked as critical fails"]
+            T2["<b>2. POLICY BLOCK</b><br>Guardrail returns allowed=false"]
+            T3["<b>3. APPROVAL REJECTION</b><br>Human denies approval request"]
+            T4["<b>4. BROWNFIELD CHANGE CONTROL (G-4)</b><br>Breaking change without migration approval"]
+            T5["<b>5. USER DENIAL (UI)</b><br>Pending request denied"]
+        end
+
+        %% Central Action
+        SafeStop[["Immediate Safe-Stop"]]
+
+        %% Guarantees Block
+        subgraph Guarantees ["SAFE-STOP GUARANTEES"]
+            direction TB
+            G1["✓ Blackboard state preserved <i>(no partial artifacts)</i>"]
+            G2["✓ Full lineage recorded <i>(audit trail intact)</i>"]
+            G3["✓ Metrics updated <i>(safeStops counter)</i>"]
+            G4["✓ Reason surfaced to UI/CLI <i>(safeStopReason field)</i>"]
+        end
+
+        %% Connections
+        T1 --> SafeStop
+        T2 --> SafeStop
+        T3 --> SafeStop
+        T4 --> SafeStop
+        T5 --> SafeStop
+        
+        SafeStop --> Guarantees
+    end
+
+    %% Visual Styling
+    style Main fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Triggers fill:none,stroke:none
+    style Guarantees fill:#fff,stroke:#333,stroke-width:1px
+    style SafeStop fill:#ffcccc,stroke:#cc0000,stroke-width:2px,color:#990000
+    style T1 fill:#fff,stroke:#666,stroke-width:1px
+    style T2 fill:#fff,stroke:#666,stroke-width:1px
+    style T3 fill:#fff,stroke:#666,stroke-width:1px
+    style T4 fill:#fff,stroke:#666,stroke-width:1px
+    style T5 fill:#fff,stroke:#666,stroke-width:1px
+
 
 ---
 ---
@@ -257,102 +331,119 @@ The UI displays comprehensive Blue-Green metrics
 ## 6. Component Interaction
 
 ### 6.1 Full Request Flow
-+-------------------------------------------------------------------+
-|                       COMPLETE REQUEST FLOW                       |
-|                                                                   |
-| User (Browser)                                                    |
-|    |                                                              |
-|    | 1. Select scenario + Submit                                  |
-|    v                                                              |
-| +------------+  POST /api/orchestrator/run?scenario=greenfield   |
-| | React SPA  |---------------------------------------------+      |
-| |(Vite :5173)|                                             |      |
-| +------------+                                             |      |
-|                                                            v      |
-|                                              +------------------+ |
-|                                              |OrchestratorControl|
-|                                              |(Spring Boot :8080)|
-|                                              +------------------+ |
-|                                                            |      |
-|                  2. Validate request                       |      |
-|                  3. Check Blue-Green                       v      |
-|                                              +------------------+ |
-|                                              | GreenfieldHealth | |
-|                                              |     Service      | |
-|                                              +------------------+ |
-|                                                            |      |
-|                  4. If healthy, execute                    v      |
-|                  5. If down, queue+retry     +------------------+ |
-|                                              |  ScenarioRunner  | |
-|                                              +------------------+ |
-|                                                            |      |
-|                  6. Build graph                            v      |
-|                  7. Wire agents              +------------------+ |
-|                                              |   Orchestrator   | |
-|                                              |   (DAG Engine)   | |
-|                                              +------------------+ |
-|                                                            |      |
-|                  8. For each node:                         v      |
-|                     - Entry gate             +------------------+ |
-|                     - Policy check           |   Agent + LLM    | |
-|                     - Agent execute          |  (Mock/OpenAI)   | |
-|                     - Exit gate              +------------------+ |
-|                     - Record lineage                       |      |
-|                                                            v      |
-|                  9. Collect metrics          +------------------+ |
-|                 10. Build RunResult          |    RunResult     | |
-|                                              |   {nodeStatus,   | |
-|                                              |    artifacts,    | |
-|                                              |     lineage,     | |
-|                                              | metrics, completed}|
-|                                              +------------------+ |
-|                                                            |      |
-| +------------+  render -> DagView + MetricsPanel + Lineage |      |
-| | React SPA  |<--------------------------------------------+      |
-| +------------+                                                    |
-+-------------------------------------------------------------------+
+sequenceDiagram
+    autonumber
+    actor User as User (Browser)
+    participant SPA as React SPA<br/>(Vite :5173)
+    participant Ctrl as OrchestratorController<br/>(Spring Boot :8080)
+    participant Health as GreenfieldHealthService
+    participant Runner as ScenarioRunner
+    participant DAG as Orchestrator<br/>(DAG Engine)
+    participant Agent as Agent + LLM<br/>(Mock/OpenAI)
+    participant Result as RunResult
+
+    User->>SPA: Select scenario + Submit
+    SPA->>Ctrl: POST /api/orchestrator/run?scenario=greenfield
+    
+    Note over Ctrl,Health: Validate request & Check Blue-Green
+    Ctrl->>Health: Check status
+    
+    alt Status Healthy
+        Health->>Runner: Execute immediately
+    else Status Down
+        Health->>Health: Queue + Exponential Retry Loop
+        Health->>Runner: Execute once healthy
+    end
+
+    Note over Runner,DAG: Build graph & Wire agents
+    Runner->>DAG: Initialize Execution Plan
+    
+    loop For each node in DAG
+        DAG->>Agent: 1. Entry gate check
+        DAG->>Agent: 2. Policy check
+        Agent->>Agent: 3. Agent execute (LLM call)
+        DAG->>Agent: 4. Exit gate check
+        DAG->>DAG: 5. Record lineage
+    end
+
+    Note over DAG,Result: Collect metrics & Build RunResult
+    DAG->>Result: Construct payload<br/>{nodeStatus, artifacts, lineage, metrics, completed}
+    Result-->>SPA: Return HTTP 200 JSON
+    SPA->>User: Render DagView + MetricsPanel + Lineage
+
 
 ---
 ---
 ## 7. Deployment Architecture
 
 ### 7.1 Development MODE
-+-------------------------------------------------------------------+
-|                       DEVELOPMENT DEPLOYMENT                      |
-|                                                                   |
-| +-------------------+    proxy    +-----------------------------+ |
-| |     Vite Dev      |------------>|         Spring Boot         | |
-| |    Server :5173   |             |         Server :8080        | |
-| |    (React HMR)    |             |        (API + Swagger)      | |
-| +-------------------+             +-----------------------------+ |
-|                                                                   |
-| Commands:                                                         |
-| |-- Backend: ./gradlew bootRun                                    |
-| |-- Frontend: cd ui && npm run dev                                |
-+-------------------------------------------------------------------+
+graph TD
+    %% Main Border
+    subgraph Main ["DEVELOPMENT DEPLOYMENT"]
+        direction TB
+
+        %% Architecture Row
+        subgraph Architecture [" "]
+            direction LR
+            Vite["<b>Vite Dev Server</b><br>Port :5173<br>(React HMR)"]
+            Spring["<b>Spring Boot Server</b><br>Port :8080<br>(API + Swagger)"]
+            
+            Vite -- proxy --> Spring
+        end
+
+        %% Commands Block
+        subgraph Commands ["Commands"]
+            direction TB
+            C1["• <b>Backend:</b> ./gradlew bootRun"]
+            C2["• <b>Frontend:</b> cd ui && npm run dev"]
+        end
+    end
+
+    %% Visual Styling
+    style Main fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Architecture fill:none,stroke:none
+    style Commands fill:#fff,stroke:#333,stroke-width:1px
+    style Vite fill:#fff,stroke:#666,stroke-width:1px
+    style Spring fill:#fff,stroke:#666,stroke-width:1px
+
 
 ### 7.2 Production MODE
-+-------------------------------------------------------------------+
-|                       PRODUCTION DEPLOYMENT                       |
-|                                                                   |
-| +---------------------------------------------------------------+ |
-| |                    Spring Boot JAR (:8080)                    | |
-| |                                                               | |
-| | +-----------------------------------------------------------+ | |
-| | |                     Static Resources                      | | |
-| | | |-- /static/index.html (React bundle)                     | | |
-| | | |-- /static/assets/*.js                                   | | |
-| | +-----------------------------------------------------------+ | |
-| |                                                               | |
-| | +-----------------------------------------------------------+ | |
-| | |                         REST API                          | | |
-| | | |-- /api/shorten, /api/stats, /api/orchestrator/*         | | |
-| | +-----------------------------------------------------------+ | |
-| +---------------------------------------------------------------+ |
-|                                                                   |
-| Build Command: ./gradlew bootJar                                  |
-| Run Command: java -jar build/libs/agentic-url-shortener-1.0.0.jar  |
-+-------------------------------------------------------------------+
+graph TD
+    %% Main Container
+    subgraph Main ["PRODUCTION DEPLOYMENT"]
+        direction TB
+
+        %% Jar Architecture
+        subgraph Jar ["Spring Boot JAR (:8080)"]
+            direction TB
+            
+            subgraph Static ["Static Resources"]
+                direction TB
+                S1["• /static/index.html (React bundle)"]
+                S2["• /static/assets/*.js"]
+             style Static fill:#fff,stroke:#666,stroke-width:1px
+            end
+
+            subgraph API ["REST API"]
+                direction TB
+                A1["• /api/shorten, /api/stats, /api/orchestrator/*"]
+             style API fill:#fff,stroke:#666,stroke-width:1px
+            end
+        end
+
+        %% Commands Block
+        subgraph Commands ["Deployment Commands"]
+            direction TB
+            C1["<b>Build Command:</b> ./gradlew bootJar"]
+            C2["<b>Run Command:</b> java -jar build/libs/agentic-url-shortener-1.0.0.jar"]
+        end
+    end
+
+    %% Visual Styling
+    style Main fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Jar fill:#f0f0f0,stroke:#333,stroke-width:1px
+    style Commands fill:#fff,stroke:#333,stroke-width:1px
+
 
 ---
 ---
